@@ -2,3 +2,6 @@ node_modules
 index.js
 index.js.map
 index.d.ts
+
+# `npm pack` output
+ocaml-string-convert-*.tgz
