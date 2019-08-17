@@ -1,4 +1,4 @@
-import assert from 'assert'
+import assert from "assert"
 
 type Nominal<Ty, Discriminant> = Ty & { __discriminant: Discriminant }
 
@@ -11,15 +11,15 @@ type fake_utf_8_string = Nominal<Uint8Array, "UTF-8"> & {
 let textEncoder = undefined,
    textDecoder = undefined
 
-if (typeof TextEncoder !== 'undefined' || typeof TextDecoder !== 'undefined') {
+if (typeof TextEncoder !== "undefined" || typeof TextDecoder !== "undefined") {
    textEncoder = TextEncoder
    textDecoder = TextDecoder
 } else {
    // This is a horrible hack, but I don't know a better way to avoid polluting the global
    // namespace.
-   const ctx = (1, eval)('this')
+   const ctx = (1, eval)("this")
 
-   require('fast-text-encoding')
+   require("fast-text-encoding")
    textEncoder = TextEncoder
    textDecoder = TextDecoder
 
@@ -27,12 +27,12 @@ if (typeof TextEncoder !== 'undefined' || typeof TextDecoder !== 'undefined') {
    delete ctx.TextDecoder
 
    // FIXME: add an unassert build-step
-   assert(typeof TextEncoder === 'undefined')
-   assert(typeof TextDecoder === 'undefined')
+   assert(typeof TextEncoder === "undefined")
+   assert(typeof TextDecoder === "undefined")
 }
 
-assert(typeof textEncoder !== 'undefined')
-assert(typeof textDecoder !== 'undefined')
+assert(typeof textEncoder !== "undefined")
+assert(typeof textDecoder !== "undefined")
 
 function charCodeAt(this: fake_utf_8_string, n: number) {
    return this[n]
@@ -43,8 +43,10 @@ function charCodeAt(this: fake_utf_8_string, n: number) {
 // a `Uint8Array` shimmed with `String`-like accessors.
 //
 // Forgive me. — ELLIOTTCABLE
-export function toFakeUTF8String(js_string : string) : fake_utf_8_string {
-   const byte_arr : fake_utf_8_string = new textEncoder('utf-8').encode(js_string as ucs_2_string)
+export function toFakeUTF8String(js_string: string): fake_utf_8_string {
+   const byte_arr: fake_utf_8_string = new textEncoder("utf-8").encode(
+      js_string as ucs_2_string,
+   )
 
    byte_arr.charCodeAt = charCodeAt
 
@@ -65,7 +67,7 @@ export function toFakeUTF8String(js_string : string) : fake_utf_8_string {
 // FIXME: This ends up iterating over the string *twice*. Not great; but I also don't have access
 // to the internals of the UTF-8 decoder if it's built into the JavaScript engine, sooooo ... and
 // this is becoming a mantra now ... forgive me. /=
-export function fromBSUTF8String(broken_string : string) : string {
+export function fromBSUTF8String(broken_string: string): string {
    const result = new Uint8Array(broken_string.length)
    for (var i = 0; i < broken_string.length; i++) {
       result[i] = broken_string.charCodeAt(i)
@@ -78,6 +80,6 @@ export function fromBSUTF8String(broken_string : string) : string {
 // well-formed `Uint8Array` of UTF-8 bytes, this produces a simple JavaScript `String`. This
 // *should not* be called on values returned from UTF-8-manipulating OCaml functions; that's what
 // `fromBuckleScriptUTF8String()` is for! This is simply a wrapper around the `TextDecoder` API.
-export function fromFakeUTF8String(fake_string : fake_utf_8_string) : string {
-   return new textDecoder('utf-8').decode(fake_string)
+export function fromFakeUTF8String(fake_string: fake_utf_8_string): string {
+   return new textDecoder("utf-8").decode(fake_string)
 }
