@@ -4,8 +4,9 @@
   "description": "Convert between JavaScript UCS-2-encoded strings and OCaml-friendly UTF-8 byte-arrays",
   "author": "ELLIOTTCABLE <npm@ell.io>",
   "license": "ISC",
-  "main": "index.js",
-  "types": "index.d.ts",
+  "main": "dist/index.js",
+  "module": "modules/index.mjs",
+  "types": "dist/index.d.ts",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ELLIOTTCABLE/ocaml-string-convert.git"
@@ -15,20 +16,22 @@
   },
   "homepage": "https://github.com/ELLIOTTCABLE/ocaml-string-convert",
   "scripts": {
-    "prepare": "tsc",
+    "build:cjs": "tsc -p tsconfig.cjs.json",
+    "build:esm": "tsc -p tsconfig.esm.json && renamer 'modules/**/*' --find js --replace mjs",
+    "prepare": "npm run build:cjs && npm run build:esm",
     "test": "jest index.test.js"
   },
   "files": [
-    "index.js",
-    "index.test.js",
-    "index.js.map",
     "index.ts",
-    "index.d.ts",
-    "tsconfig.json"
+    "index.test.js",
+    "dist/",
+    "modules/",
+    "tsconfig.*"
   ],
   "devDependencies": {
     "@types/node": "^12.7.2",
     "jest": "^24.9.0",
+    "renamer": "^1.1.2",
     "typescript": "^3.5.3"
   },
   "dependencies": {

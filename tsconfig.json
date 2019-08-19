@@ -1,13 +1,9 @@
 {
    "compilerOptions": {
-      "module": "commonjs",
-      "target": "es6",
       "esModuleInterop": true,
+      "moduleResolution": "node",
       "noImplicitThis": true,
-      "declaration": true,
-      "sourceMap": true,
+      "noEmit": true
    },
-   "files": [
-      "index.ts"
-   ]
+   "files": ["index.ts"]
 }
