@@ -11,6 +11,14 @@ it("round-trips a Unicode string", () => {
    expect(result).toEqual(source)
 })
 
+it("maintains string threequality", () => {
+   const source1 = "foo·bar"
+   const source2 = "foo·bar"
+   const fake_string1 = toFakeUTF8String(source1)
+   const fake_string2 = toFakeUTF8String(source2)
+   expect(fake_string1 === fake_string2).toBe(true)
+})
+
 it("fixes a slightly mis-encoded BuckleScript string", () => {
    const broken = "fooÂ·bar"
    const result = fromBSUTF8String(broken)
