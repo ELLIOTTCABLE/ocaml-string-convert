@@ -1,4 +1,4 @@
-let { toFakeUTF8String, fromBSUTF8String, fromFakeUTF8String } = require("./index.js")
+let { toFakeUTF8String, fromBSUTF8String, fromFakeUTF8String } = require("./dist/index.js")
 
 it("encodes without throwing", () => {
    expect(() => toFakeUTF8String("Hello, world!")).not.toThrow()
