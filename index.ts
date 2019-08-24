@@ -126,9 +126,8 @@ export function toFakeUTF8String(js_string: string): string_as_utf_8_buffer {
 // scalars properly represented in UCS-2 code units, ready for standard JavaScript manipulation.
 //
 // Finally, if you're using TypeScript, this expects a value known at compile-time to contain UTF-8
-// text; this is tracked in the type-system via the minted `string_as_utf_8_buffer` type. The
-// best-practice usage would be to tag every stringish return-value from a BuckleScript module with
-// this type:
+// text; this is tracked in the type-system via the minted `string_as_utf_8_buffer` type. Idiomatic
+// usage would be to tag every stringish return-value from a BuckleScript module with this type:
 //
 // ```typescript
 // import { toFakeUTF8String, fromFakeUTF8String } from 'ocaml-string-convert'

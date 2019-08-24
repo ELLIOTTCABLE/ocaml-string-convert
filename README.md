@@ -153,3 +153,36 @@ The inverse operation to the above.
 Given a double-encoded (effectively, mis-encoded) BuckleScript ‘string’ that's been manipulated as if it's a UTF-8 `char`-array, this function will decode (effectively, re-encode) that value into a functional, correct JavaScript (i.e. UCS-2) string.
 
 Takes a `String`, containing a series of UTF-8 bytes encoded as Unicode codepoints (in JavaScript's standard UCS-2, that is); returns a standard JavaScript `String` with those Unicode scalars properly represented in UCS-2 code units, ready for standard JavaScript manipulation.
+
+A Note on Types
+---------------
+
+Given that readers of this are almost guaranteed to write OCaml, it will probably surprise noboby that I prefer the ability to use nominal types. This is not, however, standard TypeScript practice.
+
+This library's TypeScript interface (which I hope I'm exporting correctly, by the way; I'm rather new to publishing a TypeScript-enabled library!) mints a new type for `string_as_utf_8_buffer`. Idiomatic usage would be to tag every stringish return-value from a BuckleScript module with this type:
+
+```typescript
+import { toFakeUTF8String, fromFakeUTF8String } from 'ocaml-string-convert'
+import $AModule from './aModule.bs'
+
+let $yuck = $AModule.returns_a_string() as string_as_utf_8_buffer
+// ... manipulation ...
+let str = fromFakeUTF8String($yuck)
+```
+
+(As you can see, I also like to follow a different naming-convention for values I *know* to contain opaque values produced by the BuckleScript runtime.)
+
+You can, of course, dispense with my convention at your earliest convenience, if you can't stand the (hopefully helpful?) type-errors that this produces; I do not, of course, suggest that you do so:
+
+```typescript
+import { toFakeUTF8String, fromFakeUTF8String } from 'ocaml-string-convert'
+import $AModule from './aModule.bs'
+
+function from(str: string): string {
+  fromFakeUTF8String(str as string_as_utf_8_buffer)
+}
+
+let $yuck = $AModule.returns_a_string()
+// ... manipulation ...
+let str = from($yuck)
+```
