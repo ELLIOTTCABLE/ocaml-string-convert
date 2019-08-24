@@ -77,7 +77,7 @@ tl;dr OCaml libraries expecting to operate UTF-8 byte-arrays (like [Sedlex][], [
 Solution
 --------
 
-This library provides a shim for this behaviour. Unicode input to a JavaScript program can be fed through the functions provided by this library, which uses the [TextEncoder][] and [TextDecoder][] APIs (or the [fast-text-encoding][] npm module as a shim therefor) to transform the UCS-2 strings being passed around by JavaScript systems, into `TypedArray`s of UTF-8 bytes. These UTF-8 values are then shimmed with the JavaScript functions called by the BuckleScript runtime (such as `.charCodeAt()`), such that they *behave* as UTF-8 strings. They can be passed with impunity to UTF-8 handling OCaml functions, which will now function as expected.
+This library provides a shim for this behaviour. Unicode input to a JavaScript program can be fed through the functions provided by this library, which uses the [TextEncoder][] and [TextDecoder][] APIs (or the [fast-text-encoding][] npm module as a shim therefor) to transform the UCS-2 strings being passed around by JavaScript systems, into `TypedArray`s of UTF-8 bytes. These UTF-8 values will then be copied back into (now *malformed*, but predictably-malformed) JavaScript `String`s; these can be passed with impunity to UTF-8 handling OCaml functions, which will now function as expected.
 
 **Note:** This package is not necessary for code written specifically for BuckleScript; just be aware of the BuckleScript-specific semantics of the `.[]` string-indexing operator. This package is only necessary if you're A. writing a library that's intended to be used *both* by native projects and JavaScript projects, or B. if you're using a native-targeting library from [opam][] and compiling it to JavaScript.
 
@@ -100,19 +100,56 @@ Include it on the JavaScript side of your project:
 ```js
 import {
    toFakeUTF8String,
-   fromBSUTF8String,
    fromFakeUTF8String
 } from 'ocaml-string-convert'
 ```
 
 ### `toFakeUTF8String(str)`
 
-This function is intended to be called on JavaScript strings, possibly containing higher-plane Unicode codepoints, that need to be passed to OCaml functions. It takes a `String`, and returns a `Uint8Array` shimmed with `String`-like accessors.
+This function is intended to be called on JavaScript strings (possibly containing Unicode characters outside the ASCII range) that need to be passed to OCaml functions; it ‘double-encodes’ those strings such that they will be perceived by BuckleScript-compiled OCaml as UTF-8-encoded `char`-arrays.
 
-### `fromBSUTF8String(str)`
+#### Input
 
-This function is the other half of the above: it takes the broken `String` (not a `Uint8Array`, mind you!) returned by a UTF-8-manipulating OCaml function (this is going to be a UCS-2 monstrosity of UTF-8-bytes-when-interpreted-as-UCS-2-code-units; when printed, they usually look something like `"Ø¬Ù Ù "`), re-interprets it as the UTF-8 that the OCaml program intended to produce, and encodes it *properly* into a JavaScript UCS-2 string.
+This function takes one argument, a ‘standard’ JavaScript `String`; that is, one with Unicode characters outside the ASCII range (but still within the BMP!) encoded as single, 16-bit code-units; and [higher-plane characters][] encoded as UTF-16-style [surrogate pairs][].
+
+- Example, as a UCS-2 sequence of 16-bit code-units:
+
+  ```js
+  [102, 111, 111, 183, 98, 97, 114]
+  ```
+
+- Example, as typed into a UTF-8 JavaScript source-file:
+
+  ```js
+  "foo·bar"
+  ```
+
+#### Output
+
+An abomination. This produces a JavaScript `String` (that is still technically encoded as UCS-2,
+mind you!) *containing a series of UTF-8 bytes, as interpreted as UCS-2 codepoints*.
+
+- Example, as a UCS-2 sequence of 16-bit code-units:
+
+  ```js
+  [102, 111, 111, 194, 183, 98, 97, 114]
+  ```
+
+- Example, as typed into a UTF-8 JavaScript source-file:
+
+  ```js
+  "foo\xC2\xB7bar" // or "fooÂ·bar", if you're a heathen
+  ```
+
+See that, in this example, the non-ASCII character U+00B7 “MIDDLE DOT”, which is one code-unit (literally `\u00B7`) in the original input-string, is encoded as *two* JavaScript / UCS-2 code-units, `\xC2\xB7` — C2-B7 being the UTF-8 encoding of U+00B7.
+
+[higher-plane characters]: <https://en.wikipedia.org/wiki/Plane_(Unicode)>
+[surrogate pairs]: <https://unicodebook.readthedocs.io/unicode_encodings.html#utf-16-surrogate-pairs>
 
 ### `fromFakeUTF8String(str)`
 
-Finally, although you are unlikely to need it, this is offered for completeness: it produces the exact inverse of the transformation involved in `toFakeUTF8String()`; that is, given a well-formed `Uint8Array` of UTF-8 bytes, this produces a simple JavaScript `String`. This *should not* be called on values returned from UTF-8-manipulating OCaml functions; that's what `fromBuckleScriptUTF8String()` is for! This is simply a wrapper around the `TextDecoder` API.
+The inverse operation to the above.
+
+Given a double-encoded (effectively, mis-encoded) BuckleScript ‘string’ that's been manipulated as if it's a UTF-8 `char`-array, this function will decode (effectively, re-encode) that value into a functional, correct JavaScript (i.e. UCS-2) string.
+
+Takes a `String`, containing a series of UTF-8 bytes encoded as Unicode codepoints (in JavaScript's standard UCS-2, that is); returns a standard JavaScript `String` with those Unicode scalars properly represented in UCS-2 code units, ready for standard JavaScript manipulation.

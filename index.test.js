@@ -1,4 +1,4 @@
-let { toFakeUTF8String, fromBSUTF8String, fromFakeUTF8String } = require("./dist/index.js")
+let { toFakeUTF8String, fromBSUTF8String, fromFakeUTF8String } = require(".")
 
 it("encodes without throwing", () => {
    expect(() => toFakeUTF8String("Hello, world!")).not.toThrow()
@@ -19,14 +19,14 @@ it("maintains string threequality", () => {
    expect(fake_string1 === fake_string2).toBe(true)
 })
 
-it("fixes a slightly mis-encoded BuckleScript string", () => {
+it("fixes a UTF-8-encoded string returned by BuckleScript", () => {
    const broken = "fooÂ·bar"
-   const result = fromBSUTF8String(broken)
+   const result = fromFakeUTF8String(broken)
    expect(result).toEqual("foo·bar")
 })
 
-it("fixes another badly mis-encoded BuckleScript string", () => {
+it("fixes a more-extremely mis-encoded BuckleScript string", () => {
    const broken = "\xd8\xac\xd9\x85\xd9\x84"
-   const result = fromBSUTF8String(broken)
+   const result = fromFakeUTF8String(broken)
    expect(result).toEqual("جمل")
 })
