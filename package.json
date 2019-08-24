@@ -1,6 +1,6 @@
 {
   "name": "ocaml-string-convert",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Convert between JavaScript UCS-2-encoded strings and OCaml-friendly UTF-8 byte-arrays",
   "author": "ELLIOTTCABLE <npm@ell.io>",
   "license": "ISC",
