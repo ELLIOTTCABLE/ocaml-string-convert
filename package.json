@@ -16,8 +16,8 @@
   },
   "homepage": "https://github.com/ELLIOTTCABLE/ocaml-string-convert",
   "scripts": {
-    "build:cjs": "tsc -p tsconfig.cjs.json",
-    "build:esm": "tsc -p tsconfig.esm.json && renamer 'modules/**/*' --find js --replace mjs",
+    "build:cjs": "tsc -p tsconfig.cjs.json --listEmittedFiles",
+    "build:esm": "tsc -p tsconfig.esm.json --listEmittedFiles && renamer 'modules/**/*' --find js --replace mjs --force",
     "prepare": "npm run build:cjs && npm run build:esm",
     "test": "jest index.test.js"
   },
